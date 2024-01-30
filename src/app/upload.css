@@ -1,0 +1,281 @@
+body {
+  background-color: white;
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  /* padding: 20px; */
+  color: #333;
+}
+
+.upload-container {
+  max-width: 1210px;
+  height: 570px;
+  margin: 0 auto;
+  background-color: #f9f9f9;
+  padding: 20px;
+  padding-right: 8px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Big file upload input label when the list is empty (default) */
+
+.file-upload-label {
+  display: block;
+  cursor: pointer;
+  background-color: #7e70fe;
+  color: white;
+  border-radius: 6px;
+  margin-top: 190px;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: center;
+  
+  /* Adjust padding to your preference */
+  padding: 12px 24px; /* vertical padding of 12px and horizontal padding of 24px */
+
+  /* Set a minimum width instead of a fixed width to allow the element to grow if needed */
+  min-width: 100px;
+  max-width: 200px;
+  /* Remove text-wrap as it's not a valid CSS property */
+  white-space: nowrap; /* Prevents the text from wrapping */
+  
+  /* Other styles */
+  border: 1px solid #ccc;
+}
+
+
+.file-settings-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.file-upload-label-small {
+  display: none;
+  width: 155px;
+  height: 30px;
+  line-height: 30px;
+  border-radius: 5px;
+  border: 1px solid #7e70fe;
+  text-align: center;
+  color: #7e70fe;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.file-upload-label-small:hover {
+  background-color: #f8f4fc;
+  cursor: pointer;
+}
+
+.file-upload-label-small:active {
+  background-color: #e9e7fe;
+}
+
+.file-list-container {
+  margin-top: 50px;
+  overflow: scroll;
+  height: 465px;
+  border-radius: 3px;
+}
+
+
+ul.uploaded-files {
+  list-style-type: none;
+  padding: 0;
+  padding-right: 10px;
+  margin-top: 2px;
+}
+
+li.uploaded-file {
+  padding: 8px;
+  background-color: #eee;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+}
+.file-actions {
+  display: flex;
+}
+
+.upload-loading-gif {
+  display: none;
+  width: 24px;
+  height: 24px;
+  margin-right: 20px;
+}
+
+.delete-button {
+  outline: none;
+  box-shadow: none;
+  border: none;
+  border-radius: 3px;
+}
+
+.delete-button:hover {
+  background-color: #e0e0e0;
+  cursor: pointer;
+}
+
+.delete-all-button {
+  display: none;
+  line-height: 0px;
+  border-radius: 6px;
+  border: 1px solid #7e70fe;
+  text-align: center;
+  color: #7e70fe;
+  font-weight: bold;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+}
+
+.delete-all-button:hover {
+  background-color: #f8f4fc;
+  cursor: pointer;
+}
+
+.delete-all-button:active {
+  background-color: #e9e7fe;
+}
+
+.delete-all-button svg {
+  margin-right: 10px;
+}
+.delete-all-button div {
+  margin-right: 10px;
+}
+
+.file-upload-label:hover {
+  background-color: #6e61e8;
+  cursor: pointer;
+}
+
+.file-upload-label:active {
+  background-color: #675ad9;
+}
+
+.custom-file-upload:hover {
+  background-color: #6a5fdc;
+}
+
+input[id="file-upload"] {
+  display: none;
+}
+
+.submission-button {
+  display: none;
+  height: 35px;
+  width: 170px;
+  line-height: 0px;
+  border-radius: 6px;
+  border: none;
+  text-align: center;
+  color: white;
+  background-color: #7e70fe;
+  font-weight: bold;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  float: right;
+  /* margin-right: 25px; */
+
+  padding: 10px 20px;
+}
+
+.submission-button:hover {
+  background-color: #7169de;
+  cursor: pointer;
+}
+
+.submission-button:active {
+  background-color: #6a62c4;
+}
+
+#overlay {
+  position: fixed;
+  display: none;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+}
+
+#overlay-notification {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  -ms-transform: translate(-50%,-50%);
+  width: 500px;
+  height: 250px;
+}
+
+#overlay-notification-text {
+  position: absolute;
+  width: 450px;
+  vertical-align: top;
+  overflow-wrap: break-word;
+  top: 40%;
+  left: 50%;
+  font-size: 30px;
+  color: #333;
+  transform: translate(-50%,-50%);
+  -ms-transform: translate(-50%,-50%);
+  text-align: center;
+}
+
+#overlay-notification-top {
+  height: 200px;
+}
+
+#overlay-notification-exit {
+  position: absolute;
+  height: 35px;
+  width: 170px;
+  line-height: 0px;
+  border-radius: 6px;
+  border: none;
+  text-align: center;
+  color: white;
+  background-color: #7e70fe;
+  font-weight: bold;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transform: translate(-50%,0%);
+  -ms-transform: translate(-50%,0%);
+  top: 82%;
+  left: 50%;
+}
+
+#overlay-notification-exit:hover {
+  background-color: #7169de;
+  cursor: pointer;
+}
+
+#overlay-notification-exit:active {
+  background-color: #6a62c4;
+}
