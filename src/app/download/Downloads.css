@@ -15,25 +15,12 @@ body {
   padding-right: 8px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  
-}
-
-.form-container {
-  max-width: 1210px;
-  height: 580px;
-  margin: 0 auto;
-  background-color: #f9f9f9;
-  padding: 20px;
-  padding-right: 8px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Big file upload input label when the list is empty (default) */
 
 .file-upload-label {
   display: block;
-  cursor: pointer;
   background-color: #7e70fe;
   color: white;
   border-radius: 6px;
@@ -77,10 +64,10 @@ body {
   font-size: 14px;
 }
 
-.file-upload-label-small:hover {
+/* .file-upload-label-small:hover {
   background-color: #f8f4fc;
   cursor: pointer;
-}
+} */
 
 .file-upload-label-small:active {
   background-color: #e9e7fe;
@@ -171,14 +158,14 @@ li.uploaded-file {
   margin-right: 10px;
 }
 
-.file-upload-label:hover {
+/* .file-upload-label:hover {
   background-color: #6e61e8;
   cursor: pointer;
-}
+} */
 
-.file-upload-label:active {
+/* .file-upload-label:active {
   background-color: #675ad9;
-}
+} */
 
 .custom-file-upload:hover {
   background-color: #6a5fdc;

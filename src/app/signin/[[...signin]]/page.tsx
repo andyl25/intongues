@@ -1,16 +1,16 @@
 import Image from "next/image";
 import styles from "../page.module.css";
-import Upload from '../upload';
+import Upload from '../../upload';
 import { UserButton } from "@clerk/nextjs";
 import { SignIn } from "@clerk/nextjs";
-import './signin.module.css'
+import '../signin.module.css'
 
 export default function Home() {
   return(
     <body>
           <div className="flex min-h-screen items-center justify-center">
             <div className="signin-container">
-                <SignIn signUpUrl="/signup"/>
+                <SignIn signUpUrl="/signup" redirectUrl="/signup"/>
             </div>
           </div>
     </body>

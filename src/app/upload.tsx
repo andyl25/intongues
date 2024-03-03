@@ -4,16 +4,84 @@ import axios from 'axios';
 
 import './upload.css';
 
+
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+ 
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { toast } from "@/components/ui/use-toast"
+
+
 const allowedFileTypes = ['mp3', 'wav', 'mp4'];
+
+const items = [
+    {
+      id: "spanish",
+      label: "Spanish",
+    },
+    {
+      id: "",
+      label: "Home",
+    },
+    {
+      id: "applications",
+      label: "Applications",
+    },
+    {
+      id: "desktop",
+      label: "Desktop",
+    },
+    {
+      id: "downloads",
+      label: "Downloads",
+    },
+    {
+      id: "documents",
+      label: "Documents",
+    },
+  ] as const
+
+const FormSchema = z.object({
+items: z.array(z.string()).refine((value) => value.some((item) => item), {
+    message: "You have to select at least one item.",
+}),
+})
 
 // New Functional Component
 const Upload: React.FC = () => {
-
+    const form = useForm<z.infer<typeof FormSchema>>({
+        resolver: zodResolver(FormSchema),
+        defaultValues: {
+          items: ["recents", "home"],
+        },
+      })
+    
     // Initialize state of the files with an empty list, and define
     // the function that updates it (with the useState hook)
     const initialList: File[] = []
     const [files, setFiles] = useState<File[]>(initialList);
-
+    function onSubmit(data: z.infer<typeof FormSchema>) {
+        toast({
+          title: "You submitted the following values:",
+          description: (
+            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+              <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+            </pre>
+          ),
+        })
+      }
+    
     // Handles CSS changes to display the page when there are no uploaded files (no list)
     const showEmpty = () => {
         const label = document.getElementById("file-upload-label");
@@ -123,7 +191,7 @@ const Upload: React.FC = () => {
             // change the state of files (with the useState hook) to an array spread of
             // itself + the new files being added
             setFiles(previousFiles => [...previousFiles, ...newFiles]);
-
+            console.log(files);
             // If attempted to add invalid files, display error message  
             if (invalidFileTypes.size > 0) {
                 var message = "Invalid file type";
@@ -225,17 +293,39 @@ const Upload: React.FC = () => {
 
             // Backend with AWS credentials will request a signed URL from the S3
             // instance, granting permission for an upload of the input file
-            const backend_signing_url = `https://some-backend-signing-function.amazonaws.com/sign-e3?fileName=${encodeURIComponent(file.name)}&fileType=${encodeURIComponent(file.type)}`;
-            const response = await axios.get(backend_signing_url);
-    
-            const signedUrl = response.data.uploadUrl;
-    
+            // const backend_signing_url = `https://some-backend-signing-function.amazonaws.com/sign-e3?fileName=${encodeURIComponent(file.name)}&fileType=${encodeURIComponent(file.type)}`;
+            const backend_signing_url = '/api/upload'
+            const sendLanguages = [];
+            for (const [key, value] of Object.entries(checkedLanguages)) {
+                if(value == true){
+                    sendLanguages.push(key);
+                }
+            }
+
+            const response = await fetch(backend_signing_url, {
+                method: 'POST',
+                body: JSON.stringify({filename: file.name, filetype: file.type, languages: sendLanguages}),
+            });
+
+            const signedUrl = await response.json();
+            console.log("HERE");
+            console.log(signedUrl);
             // Use the signed URL to upload the file directly to S3
-            await axios.put(signedUrl, file, {
+            await axios.put(signedUrl.uploadUrl, file, {
                 headers: {
                     'Content-Type': file.type,
                 },
             });
+
+            console.log(signedUrl.s3Name)
+            console.log("abc")
+            
+            const response2 = await fetch('/api/startjob', {
+                method: 'POST',
+                body: JSON.stringify({s3Name: signedUrl.s3Name, languages: sendLanguages}),
+            });
+            console.log("abcafter")
+            await response2;
             // If the upload is successful, remove the file from the list
             // and return a success response
             setFiles(previousFiles => previousFiles.filter(f => f !== file));
@@ -250,40 +340,90 @@ const Upload: React.FC = () => {
     };
     
     // Function that gets called on the 'Upload All' button press
-    const uploadAllFilesToS3 = () => {
-
-        // Asynchronously uploads every file and maps their response dict to uploadPromises
-        const uploadPromises = files.map((file, index) => {
-            return uploadFileToS3(file, index).catch(error => ({ success: false, file, error }));
-        });
+    const uploadAllFilesToS3 = async () => {
+        let successfulUploads = 0;
+        const failedUploads = [];
     
-        // Once every upload has been finished (either suceeding or failing), show a success 
-        // message, OR show a failure message indicating which file types are not supported
-        Promise.allSettled(uploadPromises).then((results) => {
-            const failedUploads = results
-                .filter(result => result.status === 'fulfilled' && !result.value.success)
-                .map(result => (result as PromiseFulfilledResult<{success: boolean; file: File; error?: any}>).value.file);
-    
-            console.log(`${files.length - failedUploads.length} files uploaded successfully.`);
-            console.log(`${failedUploads.length} files failed to upload.`);
-    
-            if (failedUploads.length > 0) {
-                sendNotification('Some files failed to upload. Please try again.');
-            } else {
-                showEmpty();
-                sendNotification('All files successfully uploaded!');
+        for (const [index, file] of files.entries()) {
+            try {
+                // Await the upload of each file before continuing to the next
+                await uploadFileToS3(file, index);
+                successfulUploads++;
+            } catch (error) {
+                // In case of an error, add this file to the failedUploads array
+                failedUploads.push(file);
+                console.error(`Failed to upload file: ${file.name}`, error);
             }
-        });
+        }
+    
+        // Log the results once all files have been attempted
+        console.log(`${successfulUploads} files uploaded successfully.`);
+        console.log(`${failedUploads.length} files failed to upload.`);
+    
+        if (failedUploads.length > 0) {
+            sendNotification('Some files failed to upload. Please try again.');
+        } else {
+            showEmpty();
+            sendNotification('All files successfully uploaded!');
+        }
     };
+    
     
         
         
     
     
     /* FINAL RETURN HTML */
-
     
+    const [checkedLanguages, setCheckedLanguages] = useState({});
+
+    //@ts-ignore
+    const handleCheckboxChange = (event) => {
+        const { id, checked } = event.target;
+        setCheckedLanguages((prevCheckedLanguages) => ({
+          ...prevCheckedLanguages,
+          [id]: checked,
+        }));
+      };
+    
+    const languages = [
+        'english', 'spanish', 'french', 'german', 'italian', 
+        'portuguese', 'polish', 'turkish', 'russian', 'dutch',
+        'czech', 'chinese', 'japanese', 'hungarian', 'korean'
+    ];
+
+
     return (
+        <div className="space-y-4">
+            <div className="form-container">
+        <fieldset>
+      <legend className="text-lg font-medium text-gray-900">Languages</legend>
+      <p className="mt-1 text-pretty text-sm text-gray-700">
+        Select the languages you want to dub into and upload your files below.
+      </p>
+      <div className="mt-4 space-y-2">
+        {languages.map((language) => (
+          <label key={language} htmlFor={language} className="flex cursor-pointer items-start gap-4">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                className="size-4 rounded border-gray-300"
+                id={language}
+                // @ts-ignore
+                checked={checkedLanguages[language] || false}
+                onChange={handleCheckboxChange}
+              />
+            </div>
+            <div>
+              <strong className="font-medium text-gray-900"> {language.charAt(0).toUpperCase() + language.slice(1)} </strong>
+            </div>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+
+
+        </div>
         <div className="upload-container">
             <div id="overlay">
                 <div id="overlay-notification">
@@ -322,6 +462,7 @@ const Upload: React.FC = () => {
                             <div className = "file-info">{file.name}</div>
                             <div className = "file-actions">
                                 <img src="loading.gif" className="upload-loading-gif" id={`loading-${index}`}></img>
+                                
                                 <button className = "delete-button" onClick={()=>removeFileFromIndex(index)} style={{width:"24px",height:"24px"}}>
                                     <svg style={{width:"16px",height:"16px"}} width="24" height="24" viewBox="-4.5 -1.6 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M12.0001 13.4143L18.293 19.7072L19.7072 18.293L13.4143 12.0001L19.7072 5.70718L18.293 4.29297L12.0001 10.5859L5.70718 4.29297L4.29297 5.70718L10.5859 12.0001L4.29297 18.293L5.70718 19.7072L12.0001 13.4143Z" fill="currentColor"></path></svg>
                                 </button>
@@ -340,11 +481,16 @@ const Upload: React.FC = () => {
 
             </div>
             
+            
             <div className = "file-submission-container">
                 <button className="submission-button" id="submission-button" onClick={uploadAllFilesToS3}>
                     UPLOAD
                 </button>
             </div>
+            
+        </div>
+
+        
         </div>
     );
 };

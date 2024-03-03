@@ -1,8 +1,8 @@
 "use client";
 import Image from "next/image";
 // import "./page.module.css";
-import Upload from './upload';
-import Header from './header';
+import Downloads from './Downloads';
+import Header from '../header';
 import { useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { useRouter } from 'next/navigation';
@@ -27,8 +27,8 @@ export default function Home() {
 
   return (
     <>
-      <Header currentOn={"Upload"}/>
-      <Upload />
+      <Header currentOn={"View Downloads"}/>
+      <Downloads />
     </>
   );
 }

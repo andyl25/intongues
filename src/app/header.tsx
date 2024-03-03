@@ -19,10 +19,7 @@ const user = {
   imageUrl:
     'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
 }
-const navigation = [
-  { name: 'Upload', href: '#', current: true },
-  { name: 'View Downloads', href: '#', current: false },
-]
+
 const userNavigation = [
   { name: 'Your Profile', href: '#' },
   { name: 'Settings', href: '#' },
@@ -33,7 +30,22 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function Header() {
+
+export default function Header(props) {
+  const {currentOn} = props;
+  const navigation = [
+    { name: 'Upload', href: '/', current: false },
+    { name: 'View In Progress', href: '/inprogress', current: false },
+    { name: 'View Downloads', href: '/download', current: false}
+  ]
+  
+  if (currentOn === "Upload") {
+    navigation[0].current = true;
+  } else if (currentOn === "View In Progress") {
+    navigation[1].current = true;
+  } else if (currentOn === "View Downloads") {
+    navigation[2].current = true;
+  }
   return (
     <>
       {/*
@@ -70,7 +82,8 @@ export default function Header() {
                                 ? 'bg-gray-900 text-white'
                                 : 'text-gray-300 hover:bg-gray-700 hover:text-white',
                               'rounded-md px-3 py-2 text-sm font-medium'
-                            )}
+                            )
+                            }
                             aria-current={item.current ? 'page' : undefined}
                           >
                             {item.name}
@@ -200,7 +213,7 @@ export default function Header() {
 
         <header className="bg-white shadow">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Upload Content</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{currentOn}</h1>
           </div>
         </header>
         <main>

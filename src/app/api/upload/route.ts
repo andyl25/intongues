@@ -14,7 +14,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { type NextRequest } from 'next/server'
 import { NextResponse } from 'next/server';
 import { clerkClient } from "@clerk/nextjs";
-
+import { PrismaClient, Prisma } from '@prisma/client'
 
 
 //@ts-ignore
@@ -98,7 +98,8 @@ function put(url, data) {
 
 
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
+    try{
     const { userId } = await getAuth(request);
     // if(!userId){
     //   return new Response(JSON.stringify({error: "Unauthorized"}), { status: 401 })
@@ -106,7 +107,7 @@ export async function GET(request: NextRequest) {
     if(!userId){
       return NextResponse.redirect('/signup');
     }
-    const user = await clerkClient.users.getUser(userId);
+    var user = await clerkClient.users.getUser(userId);
     
     // console.log(user);
     // console.log(user.privateMetadata['fileIndex']);
@@ -125,6 +126,9 @@ export async function GET(request: NextRequest) {
         }
       });
     }
+    user = await clerkClient.users.getUser(userId)
+    console.log("HERE")
+    console.log(user.privateMetadata['fileIndex'])
     // console.log(user.privateMetadata['fileIndex']);
     var currIndex = 0
     if(user.privateMetadata['fileIndex']){
@@ -132,19 +136,44 @@ export async function GET(request: NextRequest) {
       currIndex = user.privateMetadata['fileIndex'];
     }
     // console.log(user);
-    const searchParams = request.nextUrl.searchParams
-    const fileType = searchParams.get("fileType");
-    const filename = searchParams.get("filename");
+    const body = await request.json();
+    console.log(body);
+    const fileTypeDict = {
+      "audio/mpeg": "mp3",
+      "audio/wav": "wav",
+      "video/mp4": "mp4",
+    };
+
+    const fileType = fileTypeDict[body.filetype as keyof typeof fileTypeDict];
+    const filename = body.filename;
+    const languages = body.languages;
 
     const REGION = "us-east-2";
     const BUCKET = "intonguesaws";
-    const KEY = `${userId}%${currIndex}%${filename}.${fileType}`;
+    const KEY = `${userId}%${currIndex}.${fileType}`;
     console.log(KEY);
     const clientUrl = await createPresignedUrlWithClient({
         region: REGION,
         bucket: BUCKET,
         key: KEY,
       });
-    return new Response(clientUrl, { status: 200 })
+    const prisma = new PrismaClient()
+
+    const file = await prisma.file.create({
+      data: {
+        s3Name: KEY,
+        owner: userId,
+        languages: languages,
+        original_name: filename,
+      },
+    })
+    
+    console.log(clientUrl);
+    return new Response(JSON.stringify({uploadUrl: clientUrl, s3Name: KEY, original_name: filename, languages: []}), { status: 200 })
+  }catch(err){
+    console.log(err);
+    //@ts-ignore
+    return new Response(err, { status: 500 })
+  }
 }
 

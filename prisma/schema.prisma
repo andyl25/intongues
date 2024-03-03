@@ -11,15 +11,28 @@ datasource db {
   url = env("POSTGRES_PRISMA_URL")
   // Uses direct connection, ⚠️ make sure to keep this to `POSTGRES_URL_NON_POOLING`
   // or you'll have dangling databases from migrations
-  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 model File {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  verified   Boolean  @default(false)
-  uploadLink String?
-  languages  String[]
-  outputs    String[]
-  owner      String?
+  createdAt    DateTime @default(now())
+  verified     Boolean  @default(false)
+  s3Name       String   @id @unique
+  languages    String[]
+  outputs      outputFile[]
+  owner        String
+  original_name String
+  credits_available Boolean @default(false)
+  done         Boolean @default(false)
 }
 
+model outputFile{
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  language   String
+  orig_file   File @relation(fields: [orig_file_id], references: [s3Name])
+  output_s3Name String @unique
+  orig_file_id String
+}
+model User{
+  id           String      @id
+  credits      Int @default(0)
+}
