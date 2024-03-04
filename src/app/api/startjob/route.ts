@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
       return new Response(JSON.stringify({uploadUrl: "hi"}), { status: 200 })
   }catch(err){
     console.log(err);
+    //@ts-ignore
     return new Response(err, { status: 500 })
   }
 }

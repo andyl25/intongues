@@ -26,11 +26,12 @@ const userNavigation = [
   { name: 'Sign out', href: '#' },
 ]
 
+//@ts-ignore
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-
+//@ts-ignore
 export default function Header(props) {
   const {currentOn} = props;
   const navigation = [
