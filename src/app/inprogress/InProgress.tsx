@@ -146,9 +146,9 @@ const Upload: React.FC = () => {
                             </div>
                             <div className = "file-actions">
                                 <img src="loading.gif" className="upload-loading-gif" id={`loading-${index}`}></img>
-                                    {!file.credits_available && <div>Not Enough Credits</div>}
+                                    {/* {!file.credits_available && <div>Not Enough Credits</div>} */}
                                     {file.credits_available && !file.done && <div>In Progress...</div>}
-                                    {file.credits_available && file.done && <div>In Progress...</div>}
+                                    {file.credits_available && file.done && <div>Done</div>}
                             </div>
 
                         </div>
